@@ -7,11 +7,11 @@ networks:
 
 volumes:
   filebrowser_data:
-  apache:
+  litespeed:
 
 
 services:
-  apache:
+  litespeed:
     image: "litespeedtech/openlitespeed:latest"
     deploy:
       resources:
