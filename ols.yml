@@ -6,7 +6,7 @@ version: '3.8'
 networks:
   ingress:
     external: true
-    name: traefik-public
+    name: ${INGRESS_NET}
 
 volumes:
   filebrowser_data:
@@ -15,21 +15,21 @@ volumes:
 
 services:
   litespeed:
-    image: "litespeedtech/openlitespeed:latest"
+    image: ${LITESPEED_IMAGE}
     deploy:
       resources:
         limits:
-          cpus: '0.3'
-          memory: 100M
-      replicas: 1
+          cpus: ${LITESPEED_CPU_LIMIT}
+          memory: ${LITESPEED_MEMORY_LIMIT}
+      replicas: ${LITESPEED_REPLICAS}
       placement:
         constraints:
-          - node.labels.static == production
+          - node.labels.static.${NODE_LABEL} == 1
           - node.role == worker
       labels:
         - traefik.enable=true
-        - traefik.docker.network=traefik-public
-        - traefik.constraint-label=traefik-public
+        - traefik.docker.network=${INGRESS_NET}
+        - traefik.constraint-label=${INGRESS_NET}
         - traefik.http.routers.${NAME}-static-http.rule=Host(`${DOMAIN}`) || Host(`www.${DOMAIN}`)
         - traefik.http.routers.${NAME}-static-http.entrypoints=http
         - traefik.http.routers.${NAME}-static-http.middlewares=https-redirect
@@ -44,7 +44,7 @@ services:
       - ingress
       
   filebrowser:
-    image: hurlenko/filebrowser
+    image: ${FB_IMAGE}
     deploy:
       replicas: 1
       placement:
@@ -53,12 +53,12 @@ services:
           - node.role == worker
       labels:
         - traefik.enable=true
-        - traefik.docker.network=traefik-public
-        - traefik.constraint-label=traefik-public
-        - traefik.http.routers.${NAME}-filebrowser-http.rule=Host(`cloud.saia.ar`) && PathPrefix(`/${NAME}`)
+        - traefik.docker.network=${INGRESS_NET}
+        - traefik.constraint-label=${INGRESS_NET}
+        - traefik.http.routers.${NAME}-filebrowser-http.rule=Host(`${DRIVE_DOMAIN}`) && PathPrefix(`/${NAME}`)
         - traefik.http.routers.${NAME}-filebrowser-http.entrypoints=http
         - traefik.http.routers.${NAME}-filebrowser-http.middlewares=https-redirect
-        - traefik.http.routers.${NAME}-filebrowser-https.rule=Host(`cloud.saia.ar`) && PathPrefix(`/${NAME}`)
+        - traefik.http.routers.${NAME}-filebrowser-https.rule=Host(`${DRIVE_DOMAIN}`) && PathPrefix(`/${NAME}`)
         - traefik.http.routers.${NAME}-filebrowser-https.entrypoints=https
         - traefik.http.routers.${NAME}-filebrowser-https.tls=true
         - traefik.http.routers.${NAME}-filebrowser-https.tls.certresolver=le
