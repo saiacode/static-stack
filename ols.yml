@@ -49,7 +49,7 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.labels.static == production
+          - node.labels.static.${NODE_LABEL} == 1
           - node.role == worker
       labels:
         - traefik.enable=true
